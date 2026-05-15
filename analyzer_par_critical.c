@@ -4,8 +4,9 @@
 #include <omp.h>
 #include "hash_table.h"
 
-#define TABLE_tam 131071
-#define URL_tam   512
+#define TAM_HASH 131071
+#define URL_BUF_TAM   512
+
 
 // STRUCT PARA OS DADOS DO LOG
 typedef struct {
@@ -136,7 +137,7 @@ void build_hash_table(HashTable* ht, const char* manifest) {
         exit(EXIT_FAILURE); 
     }
 
-    char url[URL_tam];
+    char url[URL_BUF_TAM];
     long cont_put = 0;
     while (fgets(url, sizeof(url), fp)) {
         url[strcspn(url, "\r\n")] = '\0';   // remove quebra de linha
@@ -148,7 +149,7 @@ void build_hash_table(HashTable* ht, const char* manifest) {
 
     printf("\nTABELA HASH - TERMINOU\n");
     printf("URLs inseridas : %ld\n", cont_put);
-    printf("Buckets        : %d\n", TABLE_tam);
+    printf("Buckets        : %d\n", TAM_HASH);
     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 }
 
@@ -196,7 +197,7 @@ int parsing_linha(const char* linha, char* url_out) {
     if (!fim) return 0;
 
     size_t len = fim - p;
-    if (len == 0 || len >= URL_tam) return 0;
+    if (len == 0 || len >= URL_BUF_TAM) return 0;
 
     memcpy(url_out, p, len);
     url_out[len] = '\0';
@@ -222,7 +223,7 @@ void process_log_critical(HashTable* ht, char** linhas, long total) {
     */ 
     #pragma omp parallel for schedule(static)
     for (long i = 0; i < total; i++) {
-        char url[URL_tam];
+        char url[URL_BUF_TAM];
 
         if (parsing_linha(linhas[i], url)){
             CacheNode* node = ht_get(ht, url);
@@ -269,7 +270,7 @@ int main(int argc, char* argv[]) {
 
 
     // 1. TABELA HASH
-    HashTable* ht = ht_create(TABLE_tam);
+    HashTable* ht = ht_create(TAM_HASH);
     if (!ht){
          fprintf(stderr, "Erro ao criar hash table\n"); 
          return EXIT_FAILURE; 
