@@ -79,11 +79,15 @@ LogStruct ler_log(const char* arquivo){
 
     // conta as linhas em paralelo
     long total = 0;
-    // GERAL: https://learn.microsoft.com/pt-br/cpp/parallel/openmp/reference/openmp-directives?view=msvc-170
-    // REDUCTION: https://learn.microsoft.com/pt-br/cpp/parallel/openmp/reference/openmp-clauses?view=msvc-170#reduction
-    #pragma omp parallel for reduction(+:total)
+
+    #pragma omp parallel for
     for (long i = 0; i < tam; i++){
-        if (buf[i] == '\n') total++;
+        if (buf[i] == '\n'){
+            #pragma omp critical
+            {
+                total++;
+            }
+        }
     }
 
     // última linha pode não ter '\n'
@@ -217,11 +221,13 @@ void process_log_critical(HashTable* ht, char** linhas, long total) {
 
     /* 
     GERAL: https://learn.microsoft.com/pt-br/cpp/parallel/openmp/reference/openmp-directives?view=msvc-170
+    lendo sobre o parallel for, vimos:
     SCHEDULE: https://learn.microsoft.com/pt-br/cpp/parallel/openmp/reference/openmp-clauses?view=msvc-170#schedule
     schedule(static) divide as iterações em blocos iguais
-    entre as threads. Aparentemente é bom quando o trabalho por linha é uniforme (
+    entre as threads. é bom quando o trabalho por linha é uniforme (
     */ 
-    #pragma omp parallel for schedule(static)
+    //#pragma omp parallel for schedule(static)
+    #pragma omp parallel for 
     for (long i = 0; i < total; i++) {
         char url[URL_BUF_TAM];
 
@@ -236,7 +242,7 @@ void process_log_critical(HashTable* ht, char** linhas, long total) {
             }
         }
 
-        // progresso ocasional (a cada 1 milhão de linhas)
+        // print do progresso (a cada 1M)
         if (i % 1000000 == 0 && i != 0) {
             #pragma omp critical
             printf("PROCESSAMENTO: %ld linhas processadas\n", i);
