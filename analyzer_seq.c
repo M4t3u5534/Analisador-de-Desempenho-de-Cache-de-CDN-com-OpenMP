@@ -82,13 +82,25 @@ LogStruct ler_log(const char *arquivo)
 
     // conta as linhas em paralelo
     long total = 0;
-// GERAL: https://learn.microsoft.com/pt-br/cpp/parallel/openmp/reference/openmp-directives?view=msvc-170
-// REDUCTION: https://learn.microsoft.com/pt-br/cpp/parallel/openmp/reference/openmp-clauses?view=msvc-170#reduction
-#pragma omp parallel for reduction(+ : total)
+    /* Nota para pós projeto
+    GERAL: https://learn.microsoft.com/pt-br/cpp/parallel/openmp/reference/openmp-directives?view=msvc-170
+    Lendo sobre sincronização com omp, vimos o reduction, que basicamente cria uma variavel para cada thread
+    evitando precisar sincronizar todas as vezes. É mais eficiente
+    REDUCTION: https://learn.microsoft.com/pt-br/cpp/parallel/openmp/reference/openmp-clauses?view=msvc-170#reduction
+    #pragma omp parallel for reduction(+ : total)
     for (long i = 0; i < tam; i++)
     {
         if (buf[i] == '\n')
             total++;
+    }
+    */
+
+    #pragma omp parallel for
+    for (long i = 0; i < tam; i++){
+        if (buf[i] == '\n'){
+            #pragma omp critical
+            total++;
+        }
     }
 
     // última linha pode não ter '\n'
