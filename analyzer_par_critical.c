@@ -6,7 +6,6 @@
 
 #define TABLE_tam 131071
 #define URL_tam   512
-#define NUM_THREADS 4
 
 // STRUCT PARA OS DADOS DO LOG
 typedef struct {
@@ -138,17 +137,17 @@ void build_hash_table(HashTable* ht, const char* manifest) {
     }
 
     char url[URL_tam];
-    long inserted = 0;
+    long cont_put = 0;
     while (fgets(url, sizeof(url), fp)) {
         url[strcspn(url, "\r\n")] = '\0';   // remove quebra de linha
         ht_put(ht, url);
-        inserted++;
+        cont_put++;
     }
     fclose(fp);
 
 
     printf("\nTABELA HASH - TERMINOU\n");
-    printf("URLs inseridas : %ld\n", inserted);
+    printf("URLs inseridas : %ld\n", cont_put);
     printf("Buckets        : %d\n", TABLE_tam);
     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 }
