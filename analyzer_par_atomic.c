@@ -207,7 +207,7 @@ int parsing_linha(const char* linha, char* url_out) {
 }
 
 
-void process_log_critical(HashTable* ht, char** linhas, long total) {
+void process_log_atomic(HashTable* ht, char** linhas, long total) {
     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
     printf("PROCESSAMENTO - INICIO\n");
     printf("Threads: %d  |  Linhas: %ld\n", omp_get_max_threads(), total);
@@ -265,7 +265,7 @@ int main(int argc, char* argv[]) {
     }
 
 
-    printf("\nOMP CRITICAL - analyzer_par_critical.c\n");
+    printf("\nOMP ATOMIC - analyzer_par_atomic.c\n");
     printf("Log: %s  |  Threads: %d\n", argv[1], omp_get_max_threads());
     printf("\n\n");
 
@@ -290,7 +290,7 @@ int main(int argc, char* argv[]) {
 
 
     // 3. PROCESSAMENTO
-    process_log_critical(ht, log.linhas, log.tot_linhas);
+    process_log_atomic(ht, log.linhas, log.tot_linhas);
 
 
 
