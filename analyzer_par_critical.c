@@ -221,7 +221,7 @@ void process_log_critical(HashTable* ht, char** linhas, long total) {
 
     /* 
     GERAL: https://learn.microsoft.com/pt-br/cpp/parallel/openmp/reference/openmp-directives?view=msvc-170
-    lendo sobre o parallel for, vimos:
+    Lendo sobre o parallel for, vimos:
     SCHEDULE: https://learn.microsoft.com/pt-br/cpp/parallel/openmp/reference/openmp-clauses?view=msvc-170#schedule
     schedule(static) divide as iterações em blocos iguais
     entre as threads. é bom quando o trabalho por linha é uniforme (
