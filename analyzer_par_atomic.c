@@ -211,7 +211,7 @@ void process_log_atomic(HashTable* ht, char** linhas, long total) {
     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
     printf("PROCESSAMENTO - INICIO\n");
     printf("Threads: %d  |  Linhas: %ld\n", omp_get_max_threads(), total);
-    printf("Sincronizacao: omp critical\n\n");
+    printf("Sincronizacao: omp atomic\n\n");
 
 
 
