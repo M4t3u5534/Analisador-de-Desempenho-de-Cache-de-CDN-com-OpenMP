@@ -10,12 +10,16 @@
 /*
  * Nó da Tabela Hash (também usado para encadeamento em caso de colisão)
  */
+
 typedef struct CacheNode {
     char* url;                // Chave
     long hit_count;            // Valor (o contador que será incrementado)
     struct CacheNode* next;   // Ponteiro para o próximo nó em caso de colisão
-} CacheNode;
-
+    // gcc -O3 -fopenmp -DCOMPAT_PADDING analyzer_par_atomic.c hash_table.c -o analyzer_padded
+    #ifdef COMPAT_PADDING //FLAG pro compilador usar o padding. só pra não precisar ficar modificando e compilando
+    long padding [5];
+    #endif
+} CacheNode ;
 /*
  * Estrutura principal da Tabela Hash
  */
