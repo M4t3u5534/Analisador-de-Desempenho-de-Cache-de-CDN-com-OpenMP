@@ -35,23 +35,6 @@ LogStruct ler_log(const char *arquivo)
         exit(EXIT_FAILURE);
     }
 
-    /* PJ1 - OTMZD
-    char *arquivo_nome = argv[2];
-
-    FILE *fp = fopen(arquivo_nome, "r");
-    if (!fp) {
-        perror("Erro ao abrir arquivo");
-        return 1;
-    }
-    // leitura em buffer
-    fseek(fp, 0, SEEK_fim);
-    long tamanho = ftell(fp);
-    rewind(fp);
-
-    char *buffer = malloc(tamanho + 1);
-    size_t lidos = fread(buffer, 1, tamanho, fp);
-
-    */
     // pega o tamanho do arquivo
     fseek(fp, 0, SEEK_END);
     long tam = ftell(fp);
@@ -82,23 +65,9 @@ LogStruct ler_log(const char *arquivo)
 
     // conta as linhas em paralelo
     long total = 0;
-    /* Nota para pós projeto
-    GERAL: https://learn.microsoft.com/pt-br/cpp/parallel/openmp/reference/openmp-directives?view=msvc-170
-    Lendo sobre sincronização com omp, vimos o reduction, que basicamente cria uma variavel para cada thread
-    evitando precisar sincronizar todas as vezes. É mais eficiente
-    REDUCTION: https://learn.microsoft.com/pt-br/cpp/parallel/openmp/reference/openmp-clauses?view=msvc-170#reduction
-    #pragma omp parallel for reduction(+ : total)
-    for (long i = 0; i < tam; i++)
-    {
-        if (buf[i] == '\n')
-            total++;
-    }
-    */
 
-    #pragma omp parallel for
     for (long i = 0; i < tam; i++){
         if (buf[i] == '\n'){
-            #pragma omp critical
             total++;
         }
     }
@@ -236,7 +205,7 @@ void process_log(HashTable *ht, char **linhas, long tot_linhas)
     printf("PROCESSAMENTO - INICIO\n");
     printf("Linhas: %ld\n", tot_linhas);
 
-    time_t inicio = time(NULL);
+    clock_t inicio = clock();
 
 
     for (long i = 0; i < tot_linhas; i++) {
@@ -251,9 +220,10 @@ void process_log(HashTable *ht, char **linhas, long tot_linhas)
         if (i % 1000000 == 0 && i != 0) printf("PROCESSAMENTO: %ld linhas processadas\n", i);
     }
 
-    time_t final = time(NULL);
+    clock_t final = clock();
+    double diferenca = (double)(final - inicio) / CLOCKS_PER_SEC;
     printf("\nPROCESSAMENTO - TERMINOU\n");
-    printf("Processamento finalizado em %.4f s\n", difftime(final, inicio));
+    printf("Processamento finalizado em %f s\n", diferenca);
     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 }
 
@@ -282,9 +252,11 @@ int main(int argc, char *argv[])
 
     // 2. LEITURA DO LOG
     printf("CARREGANDO LOG\n");
-    time_t t0 = time(NULL);
+    clock_t t0 = clock();
     LogStruct log = ler_log(argv[1]);
-    printf("Carregado em %f s\n\n", difftime(time(NULL), t0));
+    clock_t t1 = clock();
+    double dif = (double)(t1 - t0) / CLOCKS_PER_SEC;
+    printf("Carregado em %f s\n\n", dif);
 
     // 3. PROCESSAMENTO
     process_log(ht, log.linhas, log.tot_linhas);
