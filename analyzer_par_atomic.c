@@ -142,7 +142,7 @@ void build_hash_table(HashTable* ht, const char* manifest) {
     char url[URL_BUF_TAM];
     long cont_put = 0;
     while (fgets(url, sizeof(url), fp)) {
-        url[strcspn(url, "\r\n")] = '\0';   // remove quebra de linha
+        url[strcspn(url, "\r\n")] = '\0'; // remove quebra de linha
         ht_put(ht, url);
         cont_put++;
     }
@@ -175,7 +175,7 @@ int parsing_linha(const char* linha, char* url_out) {
     for (int i = 0; i < 3; i++){
         p = strchr(p, ' ');
         if (!p) return 0;
-        p++;    // avança o espaço
+        p++; // avança o espaço
     }
 
     // pula o campo de data entre colchetes: [01/Nov/2025:10:00:01 -0300]
@@ -183,11 +183,11 @@ int parsing_linha(const char* linha, char* url_out) {
     p = strchr(p, ']');
     
     if (!p) return 0;
-    p += 2;     // pula '] '
+    p += 2; // pula '] '
 
     // p agora aponta para: "GET /video/test.mp4 HTTP/1.1"
     if (*p != '"') return 0;
-    p++;        // pula a aspas
+    p++; // pula a aspas
 
     // pula o método (GET, POST …) até o próximo espaço
     p = strchr(p, ' ');
