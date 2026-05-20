@@ -243,7 +243,6 @@ void process_log_lock(HashTable *ht, char **linhas, long tot_linhas, omp_lock_t 
             /* aplica o operador de resto da divisao (%) pelo tamanho maximo da tabela, convertendo o hash gigante 
             em um indice valido de bucket (de 0 a 131.070)*/
             size_t bucket = hash_val % TABLE_tam;
-//gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
             // Adquire o lock específico deste bucket
             omp_set_lock(&locks[bucket]);
 
