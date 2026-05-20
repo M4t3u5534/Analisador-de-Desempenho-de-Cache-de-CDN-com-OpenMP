@@ -131,6 +131,11 @@ perf stat -e cache-references,cache-misses ./analyzer_par_atomic_padded log_conc
 valgrind --tool=cachegrind ./analyzer_par_atomic_padded log_concorrente.txt
 ```
 
+### Análise — Callgrind (laboratório)
+```bash
+valgrind --tool=callgrind ./analyzer_par_atomic_padded log_concorrente.txt
+```
+
 ### Validação
 ```bash
 sort results.csv > sorted_res.csv
@@ -140,7 +145,7 @@ diff -s --strip-trailing-cr sorted_res.csv sorted_gab.csv
 
 ---
 
-## Observações Gerais
+## IMPORTANTE:
 
 - Os comandos `perf` podem **não funcionar no WSL2** com processadores Intel híbridos
   (Alder Lake / Raptor Lake) por falta de suporte ao PMU. Nesses casos, utilizar
@@ -152,7 +157,7 @@ diff -s --strip-trailing-cr sorted_res.csv sorted_gab.csv
 - O tempo medido por `omp_get_wtime()` representa apenas a **região paralela principal**,
   enquanto o `time` / `/usr/bin/time -v` mede o tempo total de execução do programa.
 
-- Relação entre os tempos:
+- Relação entre os tempos do time:
   ```
   T_real ≈ T_hash + T_carregamento + T_processamento(OMP) + T_salvamento + overheads
   T_OMP ⊂ T_real
