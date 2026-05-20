@@ -197,11 +197,11 @@ int parsing_linha(const char* linha, char* url_out) {
 // -----------------------------------------------------------------
 //555555555555555555555555555555555
 /* FUNÇÃO HASH - COPIADA DE hash_table.c
-Necessária para calcular o bucket correto sem modificar hash_table.h
-Esta é a função DJB2 padrão usada na tabela hash
+necessária para calcular o bucket correto sem modificar hash_table.h
 */
 static unsigned long hash_djb2(const char *str)
 {
+    // inicializa a variavel 'hash' com o numero magico 5381, valor inicial padrao do algoritmo djb2 para espalhar os dados
     unsigned long hash = 5381;
     int c;
 
@@ -214,10 +214,11 @@ static unsigned long hash_djb2(const char *str)
 // -----------------------------------------------------------------
 //55555555555555555555555555555555555
 /* PROCESSAMENTO COM BUCKET LOCK
-Estratégia: cada bucket da tabela hash tem um lock independente
-As threads só colidem se acessarem URLs que mapeiam para o MESMO bucket
-Isso reduz contenção em comparação com critical (lock global)
+Estrategia: cada bucket da tabela hash tem um lock independente dos outros
+As threads so poderiam colidir se acessarem URLs que mapeiam para no bucket
 */
+/* declaracao da funcao publica que processa o log em paralelo usando locks por bucket.
+   recebe o ponteiro da tabela, o vetor de strings do log, o total de linhas do log e o array de travas do OpenMP. */
 void process_log_lock(HashTable *ht, char **linhas, long tot_linhas, omp_lock_t *locks)
 {
     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
@@ -227,9 +228,11 @@ void process_log_lock(HashTable *ht, char **linhas, long tot_linhas, omp_lock_t 
     double inicio = omp_get_wtime();
 
     // Cada thread processa um subset das linhas
-    //55555555555555555555555555555
+
     #pragma omp parallel for
     for (long i = 0; i < tot_linhas; i++) {
+        /*aloca uma string temporaria local chamada 'url' com o tamanho maximo permitido
+         por estar dentro do 'for', ela se torna estritamente privada para cada thread */
         char url[URL_tam];
 
         // Extrai a URL da linha do log
@@ -237,8 +240,10 @@ void process_log_lock(HashTable *ht, char **linhas, long tot_linhas, omp_lock_t 
             // Calcula o bucket (índice) desta URL
             // Usa a mesma função hash da tabela para garantir consistência
             unsigned long hash_val = hash_djb2(url);
+            /* aplica o operador de resto da divisao (%) pelo tamanho maximo da tabela, convertendo o hash gigante 
+            em um indice valido de bucket (de 0 a 131.070)*/
             size_t bucket = hash_val % TABLE_tam;
-
+//gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg
             // Adquire o lock específico deste bucket
             omp_set_lock(&locks[bucket]);
 
@@ -251,20 +256,19 @@ void process_log_lock(HashTable *ht, char **linhas, long tot_linhas, omp_lock_t 
             // Libera o lock deste bucket
             omp_unset_lock(&locks[bucket]);
         }
-//55555555555555555555555555555555555555555
         // Progresso ocasional (a cada 1 milhão de linhas)
         if (i % 1000000 == 0 && i != 0) {
             #pragma omp critical
             printf("PROCESSAMENTO: %ld linhas processadas\n", i);
         }
     }
-//555555555555555555555555555555555555555555
+
     double final = omp_get_wtime();
     printf("\nPROCESSAMENTO - TERMINOU\n");
     printf("Processamento finalizado em %.4f s\n", final - inicio);
     printf("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\n");
 }
-
+//555555555555555555555555555555555555555555
 // -----------------------------------------------------------------
 
 int main(int argc, char *argv[])
@@ -284,12 +288,16 @@ int main(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    // PASSO 2: CRIAR UMA TABELA HASH5555555555555555
+    // PASSO 2: CRIAR UMA TABELA HASH
+    /*// invoca a funcao que abre o arquivo de manifesto e insere todas as urls estaticas
+     de forma sequencial na tabela hash 'ht'*/
     build_hash_table(ht, "manifest.txt");
 
     // PASSO 3:CRIA UM ARRAY DE LOCKS5555555555555555
     // Um lock para cada bucket da tabela hash
     printf("Inicializando locks dos buckets...\n");
+    /*// aloca dinamicamente na memoria ram espaco contiguo suficiente para armazenar 131.071
+     estruturas 'omp_lock_t', guardando o endereco em 'locks'*/
     omp_lock_t *locks = malloc(sizeof(omp_lock_t) * TABLE_tam);
     if (!locks)
     {
@@ -301,6 +309,8 @@ int main(int argc, char *argv[])
     // Inicializar cada lock sequencialmente (fora da seção paralela)
     for (size_t i = 0; i < TABLE_tam; i++)
     {
+        /* inicializa internamente cada posicao do array atraves da funcao do OpenMP, 
+        basicamente colocando em cada posicao um cadeado unico nao trancando pra maior eficiencia do so*/
         omp_init_lock(&locks[i]);
     }
     printf("Locks inicializados.\n\n");
@@ -320,7 +330,7 @@ int main(int argc, char *argv[])
     ht_save_results(ht, "results.csv");
     printf("Resultados salvos.\n\n");
 
-    // PASSO 7: DESTRUIR OS LOCKS5555555555555
+    // PASSO 7: DESTRUIR OS LOCK
     printf("Destruindo locks...\n");
     for (size_t i = 0; i < TABLE_tam; i++)
     {
