@@ -1,3 +1,18 @@
+/*
+export OMP_NUM_THREADS=1 && time ./analyzer_par_atomic log_distribuido.txt
+export OMP_NUM_THREADS=2 && time ./analyzer_par_atomic log_distribuido.txt
+export OMP_NUM_THREADS=4 && time ./analyzer_par_atomic log_distribuido.txt
+export OMP_NUM_THREADS=8 && time ./analyzer_par_atomic log_distribuido.txt
+export OMP_NUM_THREADS=8
+/usr/bin/time -v ./analyzer_par_atomic log_concorrente.txt
+valgrind --tool=cachegrind ./analyzer_par_atomic log_concorrente.txt
+valgrind --tool=callgrind  ./analyzer_par_atomic log_concorrente.txt
+export OMP_NUM_THREADS=8
+/usr/bin/time -v ./analyzer_par_atomic_padded log_concorrente.txt
+valgrind --tool=cachegrind ./analyzer_par_atomic_padded log_concorrente.txt
+valgrind --tool=callgrind ./analyzer_par_atomic_padded log_concorrente.txt
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
